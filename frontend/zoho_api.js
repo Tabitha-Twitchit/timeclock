@@ -1,5 +1,7 @@
+// When the window loads, setup the submit button
 window.addEventListener("load", function () {
   const submitBtn = document.getElementById("submitTime");
+  // When clicked...
   submitBtn.onclick = function () {
     // throws alert if insufficient data
     if (!clockInTime || !clockOutTime) {
@@ -19,7 +21,7 @@ window.addEventListener("load", function () {
         Notes: document.getElementById("notes").value,
       },
     ];
-
+// turns rowData object into a JSON string to pass to the local server
     fetch("http://localhost:3000/submit-entry", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -27,7 +29,7 @@ window.addEventListener("load", function () {
     })
       .then((response) => response.json())
       .then((data) => {
-        console.log(data);
+        // console.log(data);
         if (data.status === "success") {
           alert("Entry submitted!");
           clearEntry();

@@ -1,10 +1,12 @@
-// Our employees populated from config.json
+// Empty array where our employees populated from config.json
 let workerList = [];
 
 // An object of arrays that provide the values for dropdown logic
 // populated from config,json
 let subjectObject = {};
 
+// when the window loads, bring the values in fron config 
+// only go on once they've been received or throw an error
 window.addEventListener("load", function () {
   fetch("config.json")
     .then((response) => response.json())
@@ -23,6 +25,7 @@ let clockInTime = null;
 let clockOutTime = null;
 let durationMinutes = null;
 
+// called when you manually reset or submit
 function clearEntry() {
   clockInTime = null;
   clockOutTime = null;
@@ -36,7 +39,7 @@ function clearEntry() {
   document.getElementById("clockIn").disabled = false;
 }
 
-// on window load DOM event do a variety of setup tasks...
+// Do a variety of setup tasks, called after the config loads
 function initializeApp() {
   let whoSel = document.getElementById("whomst");
   let subjectSel = document.getElementById("themst");
@@ -85,7 +88,7 @@ function initializeApp() {
     durationDisplay.textContent =
       "Total work time " + durationMinutes + "minutes";
   };
-  // Clears current time and removes entry
+  // Clears current time and task data
   resetBtn.onclick = function () {
     if (!confirm("This will clear the current entry. Are you sure?")) {
       return;

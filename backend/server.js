@@ -1,6 +1,5 @@
+// dependencies
 require("dotenv").config();
-console.log("Client ID loaded: ", process.env.ZOHO_CLIENT_ID);
-console.log("Secret Length: ", process.env.ZOHO_CLIENT_SECRET.length);
 const express = require("express");
 const app = express();
 app.use(express.json());
@@ -19,17 +18,20 @@ async function getValidAccessToken() {
   if (currentAccessToken && Date.now() < tokenExpiresAt) {
     return currentAccessToken;
   }
-  
+
   // otherwise get a new one
-  const url = "https://accounts.zoho.com/oauth/v2/token"
-  + "?client_id=" + process.env.ZOHO_CLIENT_ID
-  + "&client_secret=" + process.env.ZOHO_CLIENT_SECRET
-  + "&grant_type=refresh_token" 
-  + "&refresh_token=" + process.env.ZOHO_REFRESH_TOKEN;
+  const url =
+    "https://accounts.zoho.com/oauth/v2/token" +
+    "?client_id=" +
+    process.env.ZOHO_CLIENT_ID +
+    "&client_secret=" +
+    process.env.ZOHO_CLIENT_SECRET +
+    "&grant_type=refresh_token" +
+    "&refresh_token=" +
+    process.env.ZOHO_REFRESH_TOKEN;
 
   const response = await fetch(url, { method: "POST" });
-  const data =  await response.json();
-  console.log("Refresh response: ", data);
+  const data = await response.json();
 
   currentAccessToken = data.access_token;
   // 60 sec buffer between expirey and refresh
@@ -40,14 +42,29 @@ async function getValidAccessToken() {
 
 app.post("/submit-entry", async (req, res) => {
   const rowData = req.body;
-
-  const ZOHO_RESOURCE_ID = "p4jlgf830464c9e4a404fa70216056fce597c";
+  const entry = rowData[0];
+  
+  // debug
+  // console.log("Received rowData:", rowData); 
+  
+  // ensure data is structured properly, throws error if not.
+  if (
+    !rowData ||
+    !entry ||
+    !entry.Date ||
+    !entry.User ||
+    !entry.Client ||
+    !entry.Job
+  ) {
+    return res.status(400).json({ error: "Missing required fields" });
+  }
 
   const url =
     "https://sheet.zoho.com/api/v2/" +
-    ZOHO_RESOURCE_ID +
+    process.env.ZOHO_RESOURCE_ID +
     "?method=worksheet.records.add" +
-    "&worksheet_name=Sheet1" +
+    "&worksheet_name=" +
+    process.env.ZOHO_WORKSHEET_NAME +
     "&json_data=" +
     encodeURIComponent(JSON.stringify(rowData));
 
@@ -55,7 +72,7 @@ app.post("/submit-entry", async (req, res) => {
     const accessToken = await getValidAccessToken();
     const zohoResponse = await fetch(url, {
       method: "POST",
-      headers: { Authorization: "Zoho-oauthtoken " + accessToken},
+      headers: { Authorization: "Zoho-oauthtoken " + accessToken },
     });
     const data = await zohoResponse.json();
     res.json(data);
