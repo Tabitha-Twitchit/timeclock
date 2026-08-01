@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="time_app.js"></script>
+    <script src="zoho_api.js"></script>
+</head>
+<body>
+    <div>
+          <label for="whomst">Who is doing this work?</label>
+          <select name="whomst" id="whomst">
+            <option value="" selected disabled>-- SELECT --</option>
+          </select>
+        </div>
+        <div>
+          <label for="themst">Who is this work being done for?</label>
+          <select name="themst" id="themst">
+            <option value="" selected disabled>-- SELECT --</option>
+          </select>
+        </div>
+        <div>
+          <label for="what">What job are you working on for this client?</label>
+          <select name="what" id="what">
+            <option value="" selected disabled>-- SELECT --</option>
+          </select>
+        </div>
+        <div>
+          <label for="notes">What specifically did you do, any other misc notes?</label>
+          <input type="text" id="notes" name="notes" />
+        </div>
+        <div>
+          <button type="button" id="clockIn">Clock In</button>
+          <button type="button" id="clockOut">Clock Out</button>
+          <p id="timeInDisplay"></p>
+          <p id="timeOutDisplay"></p>
+          <p id="durationDisplay"></p>
+          <br />
+          <br />
+          <label for="submitTime">Sends your time / activity to the timesheet.</label>
+          <button type="button" id="submitTime">SUBMIT TIME</button>
+          <br />
+          <br />
+          <label for="resetTime">Clears your entry to reset the clock</label>
+          <button type="button" id="resetTime">RESET TIME</button>
+        </div>
+</body>
+</html>

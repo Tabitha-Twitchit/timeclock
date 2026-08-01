@@ -1,0 +1,95 @@
+// Our employees populated from config.json
+let workerList = [];
+
+// An object of arrays that provide the values for dropdown logic
+// populated from config,json
+let subjectObject = {};
+
+window.addEventListener("load", function () {
+  fetch("config.json")
+    .then((response) => response.json())
+    .then((config) => {
+      workerList = config.workers;
+      subjectObject = config.clients;
+      initializeApp();
+    })
+    .catch((error) => {
+      console.error("Failed to load json config file:", error);
+    });
+});
+
+// Default clock-in state
+let clockInTime = null;
+let clockOutTime = null;
+let durationMinutes = null;
+
+function clearEntry() {
+  clockInTime = null;
+  clockOutTime = null;
+  durationMinutes = null;
+  document.getElementById("timeInDisplay").textContent = "";
+  document.getElementById("timeOutDisplay").textContent = "";
+  document.getElementById("durationDisplay").textContent = "";
+  document.getElementById("notes").value = "";
+  document.getElementById("themst").selectedIndex = 0;
+  document.getElementById("what").length = 1;
+  document.getElementById("clockIn").disabled = false;
+}
+
+// on window load DOM event do a variety of setup tasks...
+function initializeApp() {
+  let whoSel = document.getElementById("whomst");
+  let subjectSel = document.getElementById("themst");
+  let jobSel = document.getElementById("what");
+  const clockInBtn = document.getElementById("clockIn");
+  const clockOutBtn = document.getElementById("clockOut");
+  const resetBtn = document.getElementById("resetTime");
+  const timeInDisplay = document.getElementById("timeInDisplay");
+  const timeOutDisplay = document.getElementById("timeOutDisplay");
+  const durationDisplay = document.getElementById("durationDisplay");
+
+  for (const person of workerList) {
+    whoSel.options[whoSel.options.length] = new Option(person, person);
+  }
+
+  for (const client of Object.keys(subjectObject)) {
+    subjectSel.options[subjectSel.options.length] = new Option(client, client);
+  }
+
+  // Adjusts job options depending on client
+  subjectSel.onchange = function () {
+    jobSel.length = 1;
+    for (var y of subjectObject[this.value]) {
+      jobSel.options[jobSel.options.length] = new Option(y, y);
+    }
+  };
+
+  // Attaches a Date Obj and displays time button clicked in local time
+  clockInBtn.onclick = function () {
+    clockInTime = new Date();
+    timeInDisplay.textContent =
+      "Clocked in at " + clockInTime.toLocaleTimeString();
+    clockInBtn.disabled = true;
+  };
+
+  // Attaches a new Date obj, computes duration from difference with clock-in, messages if not clockedin
+  clockOutBtn.onclick = function () {
+    if (!clockInTime) {
+      timeOutDisplay.textContent = "You haven't clocked in yet!";
+      return;
+    }
+    clockOutTime = new Date();
+    durationMinutes = Math.round((clockOutTime - clockInTime) / 60000);
+    timeOutDisplay.textContent =
+      "Clocked out at " + clockOutTime.toLocaleTimeString();
+    durationDisplay.textContent =
+      "Total work time " + durationMinutes + "minutes";
+  };
+  // Clears current time and removes entry
+  resetBtn.onclick = function () {
+    if (!confirm("This will clear the current entry. Are you sure?")) {
+      return;
+    }
+    clearEntry();
+  };
+}

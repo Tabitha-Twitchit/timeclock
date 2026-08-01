@@ -1,0 +1,70 @@
+require("dotenv").config();
+console.log("Client ID loaded: ", process.env.ZOHO_CLIENT_ID);
+console.log("Secret Length: ", process.env.ZOHO_CLIENT_SECRET.length);
+const express = require("express");
+const app = express();
+app.use(express.json());
+const cors = require("cors");
+app.use(cors({ origin: "http://127.0.0.1:5500" }));
+
+app.get("/", (req, res) => {
+  res.send("Server is running!");
+});
+
+let currentAccessToken = null;
+let tokenExpiresAt = 0;
+
+async function getValidAccessToken() {
+  // if there is a good token, reuse it
+  if (currentAccessToken && Date.now() < tokenExpiresAt) {
+    return currentAccessToken;
+  }
+  
+  // otherwise get a new one
+  const url = "https://accounts.zoho.com/oauth/v2/token"
+  + "?client_id=" + process.env.ZOHO_CLIENT_ID
+  + "&client_secret=" + process.env.ZOHO_CLIENT_SECRET
+  + "&grant_type=refresh_token" 
+  + "&refresh_token=" + process.env.ZOHO_REFRESH_TOKEN;
+
+  const response = await fetch(url, { method: "POST" });
+  const data =  await response.json();
+  console.log("Refresh response: ", data);
+
+  currentAccessToken = data.access_token;
+  // 60 sec buffer between expirey and refresh
+  tokenExpiresAt = Date.now() + (data.expires_in - 60) * 1000;
+
+  return currentAccessToken;
+}
+
+app.post("/submit-entry", async (req, res) => {
+  const rowData = req.body;
+
+  const ZOHO_RESOURCE_ID = "p4jlgf830464c9e4a404fa70216056fce597c";
+
+  const url =
+    "https://sheet.zoho.com/api/v2/" +
+    ZOHO_RESOURCE_ID +
+    "?method=worksheet.records.add" +
+    "&worksheet_name=Sheet1" +
+    "&json_data=" +
+    encodeURIComponent(JSON.stringify(rowData));
+
+  try {
+    const accessToken = await getValidAccessToken();
+    const zohoResponse = await fetch(url, {
+      method: "POST",
+      headers: { Authorization: "Zoho-oauthtoken " + accessToken},
+    });
+    const data = await zohoResponse.json();
+    res.json(data);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to reach Zoho" });
+  }
+});
+
+app.listen(3000, () => {
+  console.log("Listening on http://localhost:3000");
+});

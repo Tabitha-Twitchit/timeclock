@@ -1,0 +1,10 @@
+{
+  "workers": ["Joe", "Jeanna", "?"],
+  "clients": {
+    "Zip Zap Electric": ["Website", "Graphic Assets", "Other"],
+    "Blobco Icecream": ["Store Displays", "Website", "Breakroom Signs", "Other"],
+    "Bear Adoption Center": ["Web Archive", "Website", "Summer Campaign", "Other"],
+    "CIA": ["Website", "Other"],
+    "Other": ["Other"]
+  }
+}
