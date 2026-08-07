@@ -4,7 +4,8 @@ const express = require("express");
 const app = express();
 app.use(express.json());
 const cors = require("cors");
-app.use(cors({ origin: "http://127.0.0.1:5500" }));
+app.use(cors({ origin:["http://127.0.0.1:5500", "http://127.0.0.1:1430", "tauri://localhost" ]}));
+
 
 app.get("/", (req, res) => {
   res.send("Server is running!");
