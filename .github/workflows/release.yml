@@ -47,4 +47,4 @@ jobs:
             lafangitime/src-tauri/target/release/bundle/**/*.deb
             lafangitime/src-tauri/target/release/bundle/**/*.AppImage
             lafangitime/src-tauri/target/release/bundle/**/*.msi
-            lafangitime/src-tauri/target/release/bundle/**/*.dmg
+            lafangitime/src-tauri/target/universal-apple-darwin/release/bundle/**/*.dmg
