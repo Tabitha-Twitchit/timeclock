@@ -5,10 +5,16 @@ const app = express();
 app.use(express.json());
 const cors = require("cors");
 app.use(cors({ origin:["http://127.0.0.1:5500", "http://127.0.0.1:1430", "tauri://localhost" ]}));
+const fs = require("fs");
 
-
-app.get("/", (req, res) => {
-  res.send("Server is running!");
+app.get("/config", (req, res) => {
+  const configPath = require("path").join(__dirname, "config.json");
+  fs.readFile(configPath, "utf8", (err, data) => {
+    if (err) {
+      return res.status(500).json({error: "Could not read config"});
+    }
+    res.type("application/json").send(data);
+  });
 });
 
 let currentAccessToken = null;

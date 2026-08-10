@@ -8,7 +8,7 @@ let subjectObject = {};
 // when the window loads, bring the values in fron config 
 // only go on once they've been received or throw an error
 window.addEventListener("load", function () {
-  fetch("config.json")
+  fetch("http://localhost:3000/config")
     .then((response) => response.json())
     .then((config) => {
       workerList = config.workers;
