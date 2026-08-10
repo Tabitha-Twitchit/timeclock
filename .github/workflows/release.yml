@@ -35,6 +35,10 @@ jobs:
         working-directory: lafangitime
         run: npm install
 
+      - name: Install backend dependencies
+        working-directory: lafangitime/backend
+        run: npm install
+
       - name: Build Tauri app
         working-directory: lafangitime
         run: npm run tauri build -- ${{ matrix.platform == 'macos-latest' && '--target universal-apple-darwin' || '' }}
