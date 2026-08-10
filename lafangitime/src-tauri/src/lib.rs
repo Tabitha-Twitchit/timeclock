@@ -11,6 +11,33 @@ fn greet(name: &str) -> String {
     format!("Hello, {}! You've been greeted from Rust!", name)
 }
 
+fn find_node() -> String {
+    let candidates = [
+        "/usr/local/bin/node",
+        "/opt/homebrew/bin/node",
+        "/usr/bin/node",
+    ];
+
+    for path in candidates {
+        if std::path::Path::new(path).exists() {
+            return path.to_string();
+        }
+    }
+
+    // Fallback: ask the shell directly, same as running `which node` yourself
+    if let Ok(output) = std::process::Command::new("which").arg("node").output() {
+        if output.status.success() {
+            let path = String::from_utf8_lossy(&output.stdout).trim().to_string();
+            if !path.is_empty() {
+                return path;
+            }
+        }
+    }
+
+    // Last resort: hope it's on PATH
+    "node".to_string()
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -27,15 +54,13 @@ pub fn run() {
                 .expect("failed to get backend directory")
                 .to_path_buf();
 
-            // Diagnostics for paths
-            // eprintln!("Resolved server.js path: {:?}", resource_path);
-            // eprintln!("Resolved working dir: {:?}", working_dir);
-
             let log_file = File::create("/tmp/lafangitime-server.log")
                 .expect("failed to create log file");
             let log_file_err = log_file.try_clone().expect("failed to clone log handle");
 
-            let child = Command::new("node")
+            let node_path = find_node();
+
+            let child = Command::new(&node_path)
                 .arg(&resource_path)
                 .current_dir(&working_dir)
                 .stdout(Stdio::from(log_file))
