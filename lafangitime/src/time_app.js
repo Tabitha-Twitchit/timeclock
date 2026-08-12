@@ -5,9 +5,7 @@ let workerList = [];
 // populated from config,json
 let subjectObject = {};
 
-// when the window loads, bring the values in fron config 
-// only go on once they've been received or throw an error
-window.addEventListener("load", function () {
+function loadConfig(retries = 10) {
   fetch("http://localhost:3000/config")
     .then((response) => response.json())
     .then((config) => {
@@ -16,8 +14,19 @@ window.addEventListener("load", function () {
       initializeApp();
     })
     .catch((error) => {
-      console.error("Failed to load json config file:", error);
+      if (retries > 0) {
+        setTimeout(() => loadConfig(retries -1), 500);
+      } else {
+        console.error("Failed to load config after retried: ", error);
+        alert("Could not connect to the local server. Try restarting the app.")
+      }
     });
+}
+
+// when the window loads, bring the values in fron config 
+// only go on once they've been received or throw an error
+window.addEventListener("load", function () {
+  loadConfig();
 });
 
 // Default clock-in state

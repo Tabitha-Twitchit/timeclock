@@ -60,7 +60,8 @@ pub fn run() {
                 .expect("failed to get backend directory")
                 .to_path_buf();
 
-            let log_file = File::create("/tmp/lafangitime-server.log")
+            let log_path = std::env::temp_dir().join("lafangitime-server.log");    
+            let log_file = File::create(&log_path)
                 .expect("failed to create log file");
             let log_file_err = log_file.try_clone().expect("failed to clone log handle");
 
