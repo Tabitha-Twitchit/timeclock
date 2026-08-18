@@ -56,9 +56,13 @@ pub fn run() {
                 .resolve("backend/server.js", tauri::path::BaseDirectory::Resource)
                 .expect("failed to resolve backend path");
 
+            eprintln!("Resolved server.js path: {:?}", resource_path);
+
             let working_dir = resource_path.parent()
                 .expect("failed to get backend directory")
                 .to_path_buf();
+
+            eprintln!("Resolved working dir: {:?}", working_dir);
 
             let log_path = std::env::temp_dir().join("lafangitime-server.log");    
             let log_file = File::create(&log_path)
