@@ -1,4 +1,5 @@
 use std::fs::File;
+use std::io::Write;
 use std::process::{Child, Command, Stdio};
 use std::sync::Mutex;
 use tauri::Manager;
@@ -38,6 +39,14 @@ fn find_node() -> String {
     "node".to_string()
 }
 
+// Windows sometimes returns paths with a "\\?\" verbatim prefix, which certain
+// Node.js internals mishandle. Strip it if present; a no-op on Mac/Linux.
+fn clean_windows_path(path: &std::path::Path) -> std::path::PathBuf {
+    let path_str = path.to_string_lossy();
+    let cleaned = path_str.strip_prefix(r"\\?\").unwrap_or(&path_str);
+    std::path::PathBuf::from(cleaned)
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -55,21 +64,23 @@ pub fn run() {
                 .path()
                 .resolve("backend/server.js", tauri::path::BaseDirectory::Resource)
                 .expect("failed to resolve backend path");
-
-            eprintln!("Resolved server.js path: {:?}", resource_path);
+            let resource_path = clean_windows_path(&resource_path);
 
             let working_dir = resource_path.parent()
                 .expect("failed to get backend directory")
                 .to_path_buf();
 
-            eprintln!("Resolved working dir: {:?}", working_dir);
-
-            let log_path = std::env::temp_dir().join("lafangitime-server.log");    
-            let log_file = File::create(&log_path)
+            let log_path = std::env::temp_dir().join("lafangitime-server.log");
+            let mut log_file = File::create(&log_path)
                 .expect("failed to create log file");
+
+            writeln!(log_file, "Resolved server.js path: {:?}", resource_path).ok();
+            writeln!(log_file, "Resolved working dir: {:?}", working_dir).ok();
+
             let log_file_err = log_file.try_clone().expect("failed to clone log handle");
 
             let node_path = find_node();
+            writeln!(log_file.try_clone().unwrap(), "Using node at: {}", node_path).ok();
 
             let child = Command::new(&node_path)
                 .arg(&resource_path)

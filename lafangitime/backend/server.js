@@ -4,7 +4,7 @@ const express = require("express");
 const app = express();
 app.use(express.json());
 const cors = require("cors");
-app.use(cors({ origin:["http://127.0.0.1:5500", "http://127.0.0.1:1430", "tauri://localhost" ]}));
+app.use(cors({ origin:["http://127.0.0.1:5500", "http://127.0.0.1:1430", "tauri://localhost", "http://tauri.localhost"]}));
 const fs = require("fs");
 
 app.get("/config", (req, res) => {
