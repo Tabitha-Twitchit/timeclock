@@ -1,5 +1,4 @@
 use std::fs::File;
-use std::io::Write;
 use std::process::{Child, Command, Stdio};
 use std::sync::Mutex;
 use tauri::Manager;
@@ -25,7 +24,6 @@ fn find_node() -> String {
         }
     }
 
-    // Fallback: ask the shell directly, same as running `which node` yourself
     if let Ok(output) = std::process::Command::new("which").arg("node").output() {
         if output.status.success() {
             let path = String::from_utf8_lossy(&output.stdout).trim().to_string();
@@ -35,12 +33,9 @@ fn find_node() -> String {
         }
     }
 
-    // Last resort: hope it's on PATH
     "node".to_string()
 }
 
-// Windows sometimes returns paths with a "\\?\" verbatim prefix, which certain
-// Node.js internals mishandle. Strip it if present; a no-op on Mac/Linux.
 fn clean_windows_path(path: &std::path::Path) -> std::path::PathBuf {
     let path_str = path.to_string_lossy();
     let cleaned = path_str.strip_prefix(r"\\?\").unwrap_or(&path_str);
@@ -51,13 +46,15 @@ fn clean_windows_path(path: &std::path::Path) -> std::path::PathBuf {
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
-            // focus existing window
             if let Some(window) = app.get_webview_window("main") {
                 let _ = window.set_focus();
             }
         }))
         .plugin(tauri_plugin_opener::init())
-        .plugin(tauri_plugin_autostart::init(MacosLauncher::LaunchAgent, None))
+        .plugin(tauri_plugin_autostart::init(
+            MacosLauncher::LaunchAgent,
+            None,
+        ))
         .invoke_handler(tauri::generate_handler![greet])
         .setup(|app| {
             let resource_path = app
@@ -66,21 +63,16 @@ pub fn run() {
                 .expect("failed to resolve backend path");
             let resource_path = clean_windows_path(&resource_path);
 
-            let working_dir = resource_path.parent()
+            let working_dir = resource_path
+                .parent()
                 .expect("failed to get backend directory")
                 .to_path_buf();
 
             let log_path = std::env::temp_dir().join("lafangitime-server.log");
-            let mut log_file = File::create(&log_path)
-                .expect("failed to create log file");
-
-            writeln!(log_file, "Resolved server.js path: {:?}", resource_path).ok();
-            writeln!(log_file, "Resolved working dir: {:?}", working_dir).ok();
-
+            let log_file = File::create(&log_path).expect("failed to create log file");
             let log_file_err = log_file.try_clone().expect("failed to clone log handle");
 
             let node_path = find_node();
-            writeln!(log_file.try_clone().unwrap(), "Using node at: {}", node_path).ok();
 
             let child = Command::new(&node_path)
                 .arg(&resource_path)

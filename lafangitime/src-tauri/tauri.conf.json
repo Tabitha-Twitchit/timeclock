@@ -21,7 +21,7 @@
   },
   "bundle": {
     "active": true,
-    "targets": "all",
+    "targets": ["deb", "msi", "dmg"],
     "resources": {
       "../backend/": "backend/"
     },

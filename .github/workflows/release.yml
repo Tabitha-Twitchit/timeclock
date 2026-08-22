@@ -4,10 +4,13 @@ on:
     tags:
       - 'v*'
 
+permissions:
+    contents: write
+
 jobs:
   publish-tauri:
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
         include:
           - platform: 'macos-latest'
@@ -49,6 +52,13 @@ jobs:
           name: lafangitime-${{ matrix.platform }}
           path: |
             lafangitime/src-tauri/target/release/bundle/**/*.deb
-            lafangitime/src-tauri/target/release/bundle/**/*.AppImage
+            lafangitime/src-tauri/target/release/bundle/**/*.msi
+            lafangitime/src-tauri/target/universal-apple-darwin/release/bundle/**/*.dmg
+
+      - name: Create/update GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            lafangitime/src-tauri/target/release/bundle/**/*.deb
             lafangitime/src-tauri/target/release/bundle/**/*.msi
             lafangitime/src-tauri/target/universal-apple-darwin/release/bundle/**/*.dmg
